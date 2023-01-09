@@ -63,12 +63,12 @@ image_width = 0
 og_locale = "en_US"
 
   [extra.seo.twitter]
-  site = "aaranxu"
-  creator = "aaranxu"
+  site = ""
+  creator = ""
 
   [extra.seo.facebook]
-  admins = "ichunyun"
-  publisher = "ichunyun"
+  admins = ""
+  publisher = ""
   app_id = ""
 
   # Webmaster verifications' tokens
