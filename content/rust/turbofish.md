@@ -1,10 +1,10 @@
 +++
-title = "turbofish.md"
+title = "turbofish syntax"
 date = 2023-01-08
 template = "page.html"
 
 [taxonomies]
-tags = ["rust"]
+tags = ["rust/notes"]
 +++
 
 The turbofish syntax `(::<>)` is used in Rust to specify the type of a generic when calling a function. In Rust, you can define functions that take one or more type parameters, like this:
