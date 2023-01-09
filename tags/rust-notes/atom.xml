@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Ganeshprasad Biradar - rust&#x2F;notes</title>
+	<subtitle>Currently pursuing my master&#x27;s in Computer Science at TAMU. I will be joining Nvidia as a Software Engineer in May.</subtitle>
+	<link href="https://biradarganesh25.github.io/tags/rust-notes/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://biradarganesh25.github.io"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>2023-01-08T00:00:00+00:00</updated>
+	<id>https://biradarganesh25.github.io/tags/rust-notes/atom.xml</id>
+	<entry xml:lang="en">
+		<title>turbofish syntax</title>
+		<published>2023-01-08T00:00:00+00:00</published>
+		<updated>2023-01-08T00:00:00+00:00</updated>
+		<link rel="alternate" href="https://biradarganesh25.github.io/rust/turbofish/" type="text/html"/>
+		<id>https://biradarganesh25.github.io/rust/turbofish/</id>
+		<content type="html">&lt;p&gt;The turbofish syntax &lt;code&gt;(::&amp;lt;&amp;gt;)&lt;&#x2F;code&gt; is used in Rust to specify the type of a generic when calling a function. In Rust, you can define functions that take one or more type parameters, like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#eff1f5;color:#4f5b66;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;T&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;x&lt;&#x2F;span&gt;&lt;span&gt;: T) -&amp;gt; T {
+&lt;&#x2F;span&gt;&lt;span&gt;    x
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The type parameter &lt;code&gt;T&lt;&#x2F;code&gt; is a placeholder for a type that will be specified later, when the function is called. When calling this function, you need to specify the type that you want to use for &lt;code&gt;T&lt;&#x2F;code&gt;. You can do this in one of two ways:&lt;&#x2F;p&gt;
+&lt;p&gt;Infer the type of T by providing an argument of a specific type:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#eff1f5;color:#4f5b66;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; x = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt;); &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F; T is inferred to be i32
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Specify the type of &lt;code&gt;T&lt;&#x2F;code&gt; explicitly using the turbofish syntax:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#eff1f5;color:#4f5b66;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; x = foo::&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt;); &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F; T is explicitly specified as i32
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The turbofish syntax is useful in cases where the type of the argument is not clear from the context, or when you want to specify the type of &lt;code&gt;T&lt;&#x2F;code&gt; explicitly for clarity. It can also be useful when calling functions that have multiple type parameters and you want to specify some but not all of them.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>

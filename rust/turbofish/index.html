@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+<title>turbofish syntax | Ganeshprasad Biradar</title>
+
+
+
+<meta property="og:title" content="turbofish syntax">
+
+
+
+<meta name="author" content="Ganeshprasad Biradar">
+
+
+<meta property="og:locale" content="en_US">
+
+
+<meta name="description" content="Currently pursuing my master&#x27;s in Computer Science at TAMU. I will be joining Nvidia as a Software Engineer in May.">
+<meta property="og:description" content="Currently pursuing my master&#x27;s in Computer Science at TAMU. I will be joining Nvidia as a Software Engineer in May.">
+
+
+
+<link rel="canonical" href="https://biradarganesh25.github.io/rust/turbofish/">
+<meta property="og:url" content="https://biradarganesh25.github.io/rust/turbofish/">
+
+
+
+<meta property="og:site_name" content="Ganeshprasad Biradar" />
+
+
+
+  <meta property="og:image" content="https://biradarganesh25.github.io/tale.png">
+  
+  
+
+
+
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2023-01-08T00:00:00+00:00">
+
+
+
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image"">
+  <meta property="twitter:image" content="https://biradarganesh25.github.io/tale.png">
+
+
+
+  <meta property="twitter:title" content="turbofish syntax">
+
+
+
+
+
+  
+
+  
+
+  
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+<script type="application/ld+json">
+{
+  "author": {
+    "@type":"Person",
+	  "name":"Ganeshprasad Biradar",
+  },
+  "description": "Currently pursuing my master&#x27;s in Computer Science at TAMU. I will be joining Nvidia as a Software Engineer in May.",
+  "url": "https://biradarganesh25.github.io/rust/turbofish/",
+  "@context":"https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "turbofish syntax"
+  
+    
+    
+      "datePublished":"2023-01-08T00:00:00+00:00",
+    
+    "mainEntityOfPage":{
+      "@type":"WebPage",
+      "@id":"https://biradarganesh25.github.io/rust/turbofish/"
+    },
+  
+}
+</script>
+
+  <link rel="stylesheet" href="https://biradarganesh25.github.io/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://biradarganesh25.github.io/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://biradarganesh25.github.io/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://biradarganesh25.github.io/assets/apple-touch-icon.png">
+
+  
+    <link type="application/atom+xml" rel="alternate" href="https://biradarganesh25.github.io/atom.xml" title="Ganeshprasad Biradar" />
+  
+
+  
+
+  
+  
+</head>
+
+<body>
+  
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="https://biradarganesh25.github.io">
+        <h2 class="nav-title">Ganeshprasad Biradar</h2>
+      </a>
+      <ul>
+        
+          
+            <li><a href="https://biradarganesh25.github.io/tags">Tags</a></li>
+          
+            <li><a href="https://biradarganesh25.github.io/about">About</a></li>
+          
+        
+        <li><a href="/resume.pdf" filename="Ganesh_resume.pdf" download >Resume</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+
+  <main>
+    
+  <div class="post">
+  	<div class="post-info">
+  		<span></span> Ganeshprasad Biradar<br>
+  		<span>on&nbsp;</span><time datetime="2023-01-08">January  8, 2023</time>
+  	</div>
+  	<h1 class="post-title">turbofish syntax</h1>
+  	<div class="post-line"></div>
+  	<p>The turbofish syntax <code>(::&lt;&gt;)</code> is used in Rust to specify the type of a generic when calling a function. In Rust, you can define functions that take one or more type parameters, like this:</p>
+<pre data-lang="rust" style="background-color:#eff1f5;color:#4f5b66;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">foo</span><span>&lt;T&gt;(</span><span style="color:#bf616a;">x</span><span>: T) -&gt; T {
+</span><span>    x
+</span><span>}
+</span></code></pre>
+<p>The type parameter <code>T</code> is a placeholder for a type that will be specified later, when the function is called. When calling this function, you need to specify the type that you want to use for <code>T</code>. You can do this in one of two ways:</p>
+<p>Infer the type of T by providing an argument of a specific type:</p>
+<pre data-lang="rust" style="background-color:#eff1f5;color:#4f5b66;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let</span><span> x = </span><span style="color:#96b5b4;">foo</span><span>(</span><span style="color:#d08770;">5</span><span>); </span><span style="color:#a7adba;">// T is inferred to be i32
+</span></code></pre>
+<p>Specify the type of <code>T</code> explicitly using the turbofish syntax:</p>
+<pre data-lang="rust" style="background-color:#eff1f5;color:#4f5b66;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let</span><span> x = foo::&lt;</span><span style="color:#b48ead;">i32</span><span>&gt;(</span><span style="color:#d08770;">5</span><span>); </span><span style="color:#a7adba;">// T is explicitly specified as i32
+</span></code></pre>
+<p>The turbofish syntax is useful in cases where the type of the argument is not clear from the context, or when you want to specify the type of <code>T</code> explicitly for clarity. It can also be useful when calling functions that have multiple type parameters and you want to specify some but not all of them.</p>
+
+  </div>
+
+	
+
+  <div class="pagination">
+  	
+		<a href="#" class="top">Top</a>
+		
+  </div>
+
+  </main>
+
+  
+  <footer>
+    <span>&copy; <time datetime="2023-01-09T15:27:27.141687766+00:00">2022-2023</time> Ganeshprasad Biradar. Made with <a href="https://www.getzola.org">Zola</a> with <a href="https://github.com/aaranxu/tale-zola">Tala-Zola</a> theme.</span>
+  </footer>
+  
+</body>
+</html>
