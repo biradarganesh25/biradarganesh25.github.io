@@ -1,9 +1,9 @@
-+++
-title = "using certificates properly with requests library in python"
-date = 2023-05-04
-[taxonomies]
-tags = ["python","opnenssl"]
-+++
+---
+title: "using certificates properly with requests library in python"
+date: "2023-05-04"
+author: "ganesh"
+tags: ["python","opnenssl"]
+---
 
 Whenever we try to access a "https" website with the requests library, it usually uses openssl toolkit (atleast on linux. not sure about windows) for establishing a secure connection.
 
@@ -39,7 +39,6 @@ SSL-Session:
     Timeout   : 7200 (sec)
     Verify return code: 0 (ok) #this tells us if verification succeded
     Extended master secret: no
----
 ```
 
 If the certificate validation fails (you can omit the `CApath` argument and try the same command), the output will be something like this: 
@@ -58,7 +57,6 @@ SSL-Session:
     Timeout   : 7200 (sec)
     Verify return code: 21 (unable to verify the first certificate) #failed!!
     Extended master secret: no
----
 ```
 
 Note: Ideally, a server should send all intermediary certificates to the client so that the chain is complete. But many websites do not do this - because of this the crts directory should have intermediate certificates also. This is not a problem when using web-browsers because they automatically download the missing certificates. I did not have time to find if the requests library/openssl cli tool also has this option. 
