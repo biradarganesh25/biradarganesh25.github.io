@@ -12,10 +12,10 @@ def convert_and_render_with_frontmatter(markdown_file, template_file, output_fil
     metadata = post.metadata
 
     # Convert Markdown content to HTML using Pandoc
-    html_content = pypandoc.convert_text(content, 'html', format='md')
+    html_content = pypandoc.convert_text(content, 'html', format='md', extra_args=['--highlight-style', 'pygments'])
 
     # Load the Jinja template
-    env = Environment(loader=FileSystemLoader('.'))
+    env = Environment(loader=FileSystemLoader('./templates'))
     template = env.get_template(template_file)
 
     # Render the template with HTML content and metadata
@@ -30,4 +30,4 @@ def convert_and_render_with_frontmatter(markdown_file, template_file, output_fil
 
 
 # Example usage
-convert_and_render_with_frontmatter('/home/gbiradar/Documents/biradarganesh25.github.io/content/python/tls_in_requests_lib.md', 'page.html', 'output.html')
+convert_and_render_with_frontmatter('/home/gbiradar/Documents/biradarganesh25.github.io/content/python/tls_in_requests_lib.md', 'page.html', 'index.html')
