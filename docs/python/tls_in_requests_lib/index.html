@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/css/highlighting.css">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>using certificates properly with requests library in python</title>
-</head>
-<body>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/highlighting.css">
+    <link rel="stylesheet" href="/static/css/fonts.css" />
+
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      <li><a href="/">Home</a></li>
+    </ul>
+    <hr/>
+    </nav>
+
     <h1>Author: ganesh</h1>
     <h2>Date: 2023-05-04</h2>
     <div><p>Whenever we try to access a “https” website with the requests library, it usually uses openssl toolkit (atleast on linux. not sure about windows) for establishing a secure connection.</p>
@@ -50,5 +62,10 @@
 <div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>session <span class="op">=</span> requests.session()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>session.verify <span class="op">=</span> <span class="st">&quot;./crts&quot;</span></span></code></pre></div>
 </div>
-</body>
+
+<footer>
+    Made by Ganeshprasad
+    </footer>
+    </body>
 </html>
+  

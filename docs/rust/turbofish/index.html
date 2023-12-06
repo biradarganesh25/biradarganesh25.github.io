@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/css/highlighting.css">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>turbofish syntax</title>
-</head>
-<body>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/highlighting.css">
+    <link rel="stylesheet" href="/static/css/fonts.css" />
+
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      <li><a href="/">Home</a></li>
+    </ul>
+    <hr/>
+    </nav>
+
     <h1>Author: </h1>
     <h2>Date: 2023-01-08</h2>
     <div><p>The turbofish syntax <code>(::&lt;&gt;)</code> is used in Rust to specify the type of a generic when calling a function. In Rust, you can define functions that take one or more type parameters, like this:</p>
@@ -19,5 +31,10 @@
 <div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">let</span> x <span class="op">=</span> <span class="pp">foo::</span><span class="op">&lt;</span><span class="dt">i32</span><span class="op">&gt;</span>(<span class="dv">5</span>)<span class="op">;</span> <span class="co">// T is explicitly specified as i32</span></span></code></pre></div>
 <p>The turbofish syntax is useful in cases where the type of the argument is not clear from the context, or when you want to specify the type of <code>T</code> explicitly for clarity. It can also be useful when calling functions that have multiple type parameters and you want to specify some but not all of them.</p>
 </div>
-</body>
+
+<footer>
+    Made by Ganeshprasad
+    </footer>
+    </body>
 </html>
+  
