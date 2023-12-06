@@ -3,7 +3,7 @@
     <h1>Table of Contents</h1>
     <ul>
         {% for file in files %}
-            <li><a href="{{ file }}">{{ file }}</a></li>
+            <li><a href="{{ file.url }}">{{ file.name }}</a></li>
         {% endfor %}
     </ul>
 </body>

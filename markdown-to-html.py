@@ -15,18 +15,14 @@ def convert_and_render_with_frontmatter(source_directory, target_directory, temp
 
                 # Create corresponding directory structure in target_directory
                 relative_dir = os.path.relpath(root, source_directory)
-                target_dir = os.path.join(target_directory, relative_dir)
-                # Change the file extension from .md to .html
-                target_file_name = os.path.splitext(file)[0] + '.html'
-                # Construct the full file path in the target directory
-                target_file_path = os.path.join(target_dir, target_file_name)
+                target_dir = os.path.join(target_directory, relative_dir, file)
+                target_dir = target_dir.rsplit('.', 1)[0]
                 os.makedirs(target_dir, exist_ok=True)
 
                 # Convert the full path of md files in source_directory to a URL-like string
                 url = os.path.relpath(full_path, source_directory).replace(os.path.sep, '/')
                 # Exclude the '.md' extension from the URL
                 url = url.rsplit('.', 1)[0]
-                markdown_files.append(url)
 
                 # Print the absolute path of the markdown file
                 absolute_path = os.path.abspath(full_path)
@@ -39,6 +35,8 @@ def convert_and_render_with_frontmatter(source_directory, target_directory, temp
                 content = post.content
                 metadata = post.metadata
 
+                markdown_files.append({'url':url, 'name': metadata['title']})
+
                 # Convert Markdown content to HTML using Pandoc
                 html_content = pypandoc.convert_text(content, 'html', format='md', extra_args=['--highlight-style', 'pygments'])
 
@@ -50,7 +48,13 @@ def convert_and_render_with_frontmatter(source_directory, target_directory, temp
                 rendered_html = template.render(content=html_content, **metadata)
 
                 # Write the output to an HTML file
-                with open(target_file_path, 'w') as file:
+                with open(os.path.join(target_dir,'index.html'), 'w') as file:
+                    file.write(rendered_html)
+
+                # Write the index file
+                rendered_html = env.get_template('index.html').render(files=markdown_files)
+
+                with open(os.path.join('docs', 'index.html'), 'w') as file: 
                     file.write(rendered_html)
 
 # Directory containing your markdown files
