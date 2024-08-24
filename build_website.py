@@ -41,5 +41,5 @@ def generate_static_site(blog_posts_dir, output_dir):
 
 if __name__ == "__main__":
     blog_posts_dir = 'html_content'
-    output_dir = 'output'
+    output_dir = 'docs'
     generate_static_site(blog_posts_dir, output_dir)
