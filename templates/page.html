@@ -1,8 +1,5 @@
 {% include 'header.html' %}
 
-    <h1>{{ title }}</h1>
-    <h2>Author: {{ author }}</h2> 
-    <h2>Date: {{ date }}</h2>
-    <div>{{ content | safe }}</div>
+    {{ content | safe }}
 
 {%include 'footer.html' %}
