@@ -1,6 +1,23 @@
 import os
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
+import yaml
+
+def parse_front_matter(file_path):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    
+    # Split the content into front matter and HTML
+    parts = content.split('---', 2)
+    if len(parts) == 3:
+        front_matter = yaml.safe_load(parts[1])
+        html_content = parts[2]
+    else:
+        front_matter = {}
+        html_content = content
+    
+    print(f"front_matter: {front_matter}")
+    return front_matter, html_content
 
 def generate_static_site(blog_posts_dir, output_dir):
     # Create output directory if it doesn't exist
@@ -17,27 +34,43 @@ def generate_static_site(blog_posts_dir, output_dir):
                 rel_path = os.path.relpath(os.path.join(root, file), blog_posts_dir)
                 blog_posts.append({"url": rel_path, "name": file})
 
-    # Generate index.html
-    index_template = env.get_template('index.html')
-    index_content = index_template.render(blog_posts=blog_posts)
-    with open(os.path.join(output_dir, 'index.html'), 'w') as f:
-        f.write(index_content)
 
+    tags = {}
     # Process each blog post
     post_template = env.get_template('page.html')
     for post in blog_posts:
         # Read the content of the blog post
-        with open(os.path.join(blog_posts_dir, post["url"]), 'r') as f:
-            post_content = f.read()
+        post_front_matter, post_content = parse_front_matter(os.path.join(blog_posts_dir, post["url"]))
+        for tag in post_front_matter["tags"]:
+            if tag not in tags:
+                tags[tag] = []
+            tags[tag].append({"url": post["url"], "title": post_front_matter["title"]})
+        
+        post["title"] = post_front_matter["title"]
 
         # Render the post template
-        output = post_template.render(content=post_content)
+        output = post_template.render(content=post_content, title=post["title"])
 
         # Write the rendered post to the output directory
         output_path = os.path.join(output_dir, post["url"])
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w') as f:
             f.write(output)
+
+    # Generate index.html
+    index_template = env.get_template('index.html')
+    index_content = index_template.render(blog_posts=blog_posts)
+    with open(os.path.join(output_dir, 'index.html'), 'w') as f:
+        f.write(index_content)
+    
+    print(f"tags: {tags}")
+    tags_template = env.get_template("tags.html")
+    output = tags_template.render(tags=tags)
+    output_path = os.path.join(output_dir, "tags.html")
+    with open(output_path, "w") as f:
+        f.write(output)
+
+
 
 if __name__ == "__main__":
     blog_posts_dir = 'html_content'

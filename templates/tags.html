@@ -1,0 +1,15 @@
+{% include 'header.html' %}
+
+    <h1>Tags</h1>
+    <ul>
+        {% for tag, urls_info in tags.items()%}
+            <li><p>{{tag}}</p></li>
+            <ul>
+                {% for url_info in urls_info %}
+                    <li><a href="{{ url_info['url'] }}">{{ url_info["title"] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </ul>
+
+{%include 'footer.html' %}
