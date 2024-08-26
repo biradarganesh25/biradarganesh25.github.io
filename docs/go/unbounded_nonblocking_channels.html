@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Implementing unbounded nonblocking channels in Go</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/highlighting.css">
+    <link rel="stylesheet" href="/static/css/fonts.css" />
+
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/tags.html">Tags</a></li>
+    </ul>
+    <hr/>
+    </nav>
+
+    <h1> Implementing unbounded nonblocking channels in Go </h1>
+    <p>It would have been nice if it was possible to create nonblocking channels in Go with dynamic capacity. At work, I needed a data structure to solve the classic producer/consumer problem - with the following constraints: </p>
+<ol>
+<li>The number of consumers and producers were not known ahead of time</li>
+<li>The consumers should stop waiting once the producers are finsihed</li>
+<li>The producers should not be blocked if the consumers are not able to keep up </li>
+</ol>
+<p>It the second constraint that made the problem harder - otherwise a simple global buffer protected by locks would've sufficied. </p>
+<p>It is not possible to solve this with channels in Go because to have non-blocking channels you'd need to know the capacity of the channel. So I implemented a data structure which can act as a nonblocking channel with dynamic capacity. This data structure follows some semantics similar to a Go channel:</p>
+<ol>
+<li>A <code>Receive</code> blocks till data is available</li>
+<li>A close on it will send a signal to all waiting consumers</li>
+<li>A <code>Send</code> on a closed channel will panic</li>
+</ol>
+<p>It differs in the following semantics:</p>
+<ol>
+<li>A <code>Send</code> will always suceed - dynamic capacity</li>
+</ol>
+<p>The idea is this: have a global buffer that consumers and producers can access, protected by a lock. But we do not use this lock directly - we wrap it in a condition variable. A condition variable provides an additional important functionality necessary to satisfy the second constraint: a way to signal (i.e wake up) consumers waiting (i.e sleeping) on the condition variable.</p>
+<p>This signal can be of 2 types:
+1. Send the signal to a single waiting consumer
+2. Broadcast the signal to all the waiting consumers</p>
+<p>A condition variable is used to signal that some condition has been met between threads. It exposes two functionalities: to sleep on the variable and to broadcast on the variable (which wakes up any sleeping threads). </p>
+<p>Condition variables in Go have the both the ability to <code>Signal</code> and <code>Broadcast</code>.</p>
+<p>The idea is that any thread that needs to wait for a condition to be met can sleep on on condition variable. This is much more efficient than continuosly checking it in a for loop. Any other thread that causes this condition to be met can wake up the sleeping threads (if any) using the same condition variable. </p>
+<p>The psuedocode for producer would look like this: </p>
+<pre><code class="language-text">    1. Acquire lock
+    2. Add to buffer
+    3. If buffer was empty - signal on the condition variable to wake up one sleeping
+        (if any) consumers
+    4. Release lock
+</code></pre>
+<p>The psuedocode for consumer would look like: </p>
+<pre><code class="language-text">    1. Acquire lock via condition variable
+    2. if buffer empty:
+        wait on condition variable
+    3. consume from the buffer
+    4. release lock
+</code></pre>
+<p>This data structure will also provide a <code>Close</code> method to <code>broadcast</code> to all the sleeping consumers and tell them that no more data will be available. Let's look at the implementation now: </p>
+<p>The Go struct would be: </p>
+<pre><code class="language-go">type UnboundedChannel[T any] struct {
+    buffer      []T
+    bufCondVar *sync.Cond
+    closed      bool
+}
+</code></pre>
+<p>The <code>closed</code> will be used to check if the channel is closed or not before sending or receiving -
+if closed send will panic and receive will return any items remaining in buffer or a zero value.</p>
+<p>The actual implementation of the <code>Send</code> function (i.e producer)</p>
+<pre><code class="language-go">func (uc *UnboundedChannel[T]) Send(data T) {
+    uc.bufCondVar.L.Lock()
+    defer uc.bufCondVar.L.Unlock()
+
+    if uc.closed {
+        panic(&quot;sending on a closed channel&quot;)
+    }
+
+    uc.buffer = append(uc.buffer, data)
+    if len(uc.buffer) == 1 {
+        uc.bufCondVar.Signal()
+    }
+
+}
+</code></pre>
+<p>As in the pseudocode, we first acquire the lock. The case of sending on closed channel was 
+not covered in the pseudocode - I wanted to keep that simple and focus on the main concept.
+If the buffer was empty, we will <code>Signal</code> on the condition variable to wake up one sleeping consumer.</p>
+<p>Sending a <code>Signal</code> here instead of <code>Broadcasting</code> is very important and subtle: in the 
+<code>Receive</code>, we wait for the condition to be true in a <code>if</code>. If producer was <code>Broadcasting</code>
+instead of <code>Signalling</code>, we'd now need to sleep in a <code>for</code> loop: because all the waiting 
+consumers get awoken at the same time, they cannot be sure that the condition is true</p>
+<p>The implementation of <code>Receive</code> function (i.e consumer)</p>
+<pre><code class="language-go">func (uc *UnboundedChannel[T]) Receive() (T, bool) {
+    uc.bufCondVar.L.Lock()
+    defer uc.bufCondVar.L.Unlock()
+
+    if uc.closed {
+        var zero T
+        return zero, false
+    }
+    if len(uc.buffer) == 0 {
+        uc.bufCondVar.Wait()
+        if uc.closed {
+            var zero T
+            return zero, false
+        }
+    }
+
+    data := uc.buffer[len(uc.buffer)-1]
+    uc.buffer = uc.buffer[:len(uc.buffer)-1]
+    return data, true
+}
+</code></pre>
+<p>The logic here is: after getting the lock, if it has been closed, return a zero value. 
+Otherwise, <code>Wait</code> for condition to be true: i.e buffer to be not-empty. But when the 
+<code>Receive</code> gets awoken, it cannot be sure if it is because <code>Close</code> was called or <code>Send</code> 
+was called. Therefore, we again check if <code>Close</code> has been called and if it has, we return
+the zero value again.</p>
+<p>Another thing to note here is that <code>Receive</code> returns a boolean which tells whether the data
+was returned from the buffer or a zero value was returned. If a zero value was returned, the 
+consumers can assume that the channel was closed.</p>
+<p>The remaining part is as explained in the pseudocode.</p>
+<p>Finally, we can have one more <code>Close</code> function, which can be used to tell the consumers that
+no more data will be sent:</p>
+<pre><code class="language-go">func (uc *UnboundedChannel[T]) Close() {
+    uc.bufCondVar.L.Lock()
+    defer uc.bufCondVar.L.Unlock()
+    uc.closed = true
+    uc.bufCondVar.Broadcast()
+}
+</code></pre>
+<p>We can panic here if needed - that would maintain similar semantics with a Go channel. </p>
+<p>And that's it! Here's a simple test to make sure it works and show it's usage:</p>
+<pre><code class="language-go">func Test_UnboundedChannel(t *testing.T) {
+    uc := NewUnboundedChannel[int]()
+    array := make([]int, 10)
+    wg := sync.WaitGroup{}
+
+    for i := 0; i &lt; 10; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            indx, _ := uc.Receive()
+            array[indx] = 1
+        }()
+    }
+
+    for i := 0; i &lt; 10; i++ {
+        wg.Add(1)
+        go func(i int) {
+            defer wg.Done()
+            uc.Send(i)
+        }(i)
+    }
+
+    wg.Wait()
+
+    for i := 0; i &lt; 10; i++ {
+        if array[i] != 1 {
+            t.Fatalf(&quot;unbounded channel not working&quot;)
+        }
+    }
+
+}
+</code></pre>
+<p>This just creates 10 consumers and 10 producers and send a unique value from 
+the producers and is verified that all the consumers have all the unique values.</p>
+
+<footer>
+    Made by Ganeshprasad
+    </footer>
+    </body>
+</html>
+  

@@ -2,6 +2,7 @@ import os
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 import yaml
+import markdown
 
 def parse_front_matter(file_path):
     with open(file_path, 'r') as file:
@@ -11,13 +12,17 @@ def parse_front_matter(file_path):
     parts = content.split('---', 2)
     if len(parts) == 3:
         front_matter = yaml.safe_load(parts[1])
-        html_content = parts[2]
+        markdown_content = parts[2]
     else:
         front_matter = {}
-        html_content = content
+        markdown_content = content
     
     print(f"front_matter: {front_matter}")
-    return front_matter, html_content
+    return front_matter, markdown_content
+
+def convert_markdown_to_html(markdown_content):
+    html_content = markdown.markdown(markdown_content, extensions=['extra'])
+    return html_content
 
 def generate_static_site(blog_posts_dir, output_dir):
     # Create output directory if it doesn't exist
@@ -30,9 +35,10 @@ def generate_static_site(blog_posts_dir, output_dir):
     blog_posts = []
     for root, _, files in os.walk(blog_posts_dir):
         for file in files:
-            if file.endswith('.html'):
+            if file.endswith('.md'):
                 rel_path = os.path.relpath(os.path.join(root, file), blog_posts_dir)
-                blog_posts.append({"url": rel_path, "name": file})
+                url = rel_path.split('.')[0]+'.html'
+                blog_posts.append({"url": url, "name": file, "path": rel_path})
 
 
     tags = {}
@@ -40,7 +46,8 @@ def generate_static_site(blog_posts_dir, output_dir):
     post_template = env.get_template('page.html')
     for post in blog_posts:
         # Read the content of the blog post
-        post_front_matter, post_content = parse_front_matter(os.path.join(blog_posts_dir, post["url"]))
+        post_front_matter, post_content = parse_front_matter(os.path.join(blog_posts_dir, post["path"]))
+        post_content = convert_markdown_to_html(post_content)
         for tag in post_front_matter["tags"]:
             if tag not in tags:
                 tags[tag] = []
@@ -69,8 +76,6 @@ def generate_static_site(blog_posts_dir, output_dir):
     output_path = os.path.join(output_dir, "tags.html")
     with open(output_path, "w") as f:
         f.write(output)
-
-
 
 if __name__ == "__main__":
     blog_posts_dir = 'html_content'
