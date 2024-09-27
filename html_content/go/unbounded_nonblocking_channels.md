@@ -15,7 +15,7 @@ It the second constraint that made the problem harder - otherwise a simple globa
 It is not possible to solve this with channels in Go because to have non-blocking channels you'd need to know the capacity of the channel. So I implemented a data structure which can act as a nonblocking channel with dynamic capacity. This data structure follows some semantics similar to a Go channel:
 
 1. A `Receive` blocks till data is available
-2. A close on it will send a signal to all waiting consumers
+2. A `Close` on it will send a signal to all waiting consumers
 3. A `Send` on a closed channel will panic
 
 It differs in the following semantics:
