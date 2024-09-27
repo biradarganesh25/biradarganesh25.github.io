@@ -3,6 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 import yaml
 import markdown
+from datetime import date
 
 def parse_front_matter(file_path):
     with open(file_path, 'r') as file:
@@ -54,6 +55,7 @@ def generate_static_site(blog_posts_dir, output_dir):
             tags[tag].append({"url": post["url"], "title": post_front_matter["title"]})
         
         post["title"] = post_front_matter["title"]
+        post["published_date"] = date.fromisoformat(post_front_matter["published_date"])
 
         # Render the post template
         output = post_template.render(content=post_content, title=post["title"])

@@ -2,6 +2,7 @@
 tags: 
     - python 
 title: Using TLS certificates properly with requests library in Python 
+published_date: "2024-01-24"
 --- 
 
 Whenever we try to access a "https" website with the requests library, it usually uses openssl toolkit (atleast on linux. not sure about windows) for establishing a secure connection.

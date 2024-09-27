@@ -2,6 +2,7 @@
 tags: 
     - go 
 title: Implementing unbounded nonblocking channels in Go 
+published_date: "2024-07-01"
 --- 
 
 It would have been nice if it was possible to create nonblocking channels in Go with dynamic capacity. At work, I needed a data structure to solve the classic producer/consumer problem - with the following constraints: 
