@@ -22,6 +22,7 @@
     </nav>
 
     <h1> Using TLS certificates properly with requests library in Python </h1>
+    <span style="font-size: 16px;"><i>posted on Jan 24, 2024</i></span>
     <p>Whenever we try to access a "https" website with the requests library, it usually uses openssl toolkit (atleast on linux. not sure about windows) for establishing a secure connection.</p>
 <p>The OpenSSL toolkit on linux does not any, by default, have any trusted "root certificates". check <a href="https://support.mozilla.org/en-US/kb/secure-website-certificate">this link</a> for more information on how TLS certificates are validated.</p>
 <p>Because of this requests library fails to verify the authenticity of the server and throws an error like this:</p>

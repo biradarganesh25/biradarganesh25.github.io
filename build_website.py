@@ -58,7 +58,7 @@ def generate_static_site(blog_posts_dir, output_dir):
         post["published_date"] = date.fromisoformat(post_front_matter["published_date"])
 
         # Render the post template
-        output = post_template.render(content=post_content, title=post["title"])
+        output = post_template.render(content=post_content, title=post["title"], published_date=post["published_date"])
 
         # Write the rendered post to the output directory
         output_path = os.path.join(output_dir, post["url"])

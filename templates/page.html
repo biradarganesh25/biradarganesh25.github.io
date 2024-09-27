@@ -1,6 +1,7 @@
 {% include 'header.html' %}
 
     <h1> {{title}} </h1>
+    <span style="font-size: 16px;"><i>posted on {{ published_date.strftime('%b %-d, %Y') }}</i></span>
     {{ content | safe }}
 
 {%include 'footer.html' %}
