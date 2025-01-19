@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Learning formal verification by writing a spec for verifying a zero-downtime database migration in PlusCal</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <!-- <link rel="stylesheet" href="/static/css/highlighting.css"> -->
+    <link rel="stylesheet" href="/static/css/fonts.css" />
+    <link href="/static/css/prism.css" rel="stylesheet" />
+
+
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/tags.html">Tags</a></li>
+    </ul>
+    <hr/>
+    </nav>
+
+    <h1> Learning formal verification by writing a spec for verifying a zero-downtime database migration in PlusCal </h1>
+    <span style="font-size: 16px;"><i>posted on Dec 28, 2024</i></span>
+    <p>Formal verification can be used to analyze complex systems to ensure 
+their correctness. Formal verification is the process of checking that a system 
+satisfies specific properties (which are specified by the user) across all possible states. There are two main types of properties: "safety properties" and "liveness properties".
+There are 2 main types of properties: 
+"safety properties" and "liveness properties". For the formal definition,
+please <a href="https://will62794.github.io/formal-methods/2020/08/01/safety-and-liveness.html">refer here</a>.
+If a property is not satisfied in any state but has the potential to be
+satisfied in a future state, then that would be a "liveness 
+property". If it can never be satsified in any future state, then it would
+be a "safety property".</p>
+<p>For example, let's imagine a bunch of servers serving a website. A property
+saying that "no server can ever be offline" would be a safety property 
+because if in any state of the system, any server goes offline the property
+would not be satisfied and can never be satisfied in any future state 
+after that. But a property saying that "all servers that go offline
+eventually come back online" would be a "liveness property" because 
+there is always a possiblity of that being true in a future state.</p>
+<p>TLA+ is a formal specification language where we can model systems 
+and verify properties across all possible system states. It 
+allows us to enumerate all possible states a system can be 
+in and verify that specified properties hold true 
+across all these states.</p>
+<p>PlusCal is a DSL for TLA+. It sits at a higher level of abstraction
+and is much easier to specify complex systems in it compared to TLA+.
+The trade-off is that some kinds of systems cannot be specified (i.e
+it is more constrained than TLA+, but it is sufficient for most 
+common use cases). </p>
+<p>I went through <a href="https://learntla.com/index.html">learn tla</a> in about 2 weeks (it 
+was quite dense - I ended up learning some things about formal verification in order
+to understand that material fully). I thought that the best way to learn it would be 
+to write a spec that actually does something useful and I thought verifying a zero-
+downtime database migration algorithm would be fun.</p>
+<p>Let's assume a service exposes 3 APIs: <code>Upsert</code> either updates or creates a new object
+, <code>Delete</code> which deletes the object and <code>Get</code> which gets the object. 
+We want to migrate these objects (for simplicity 
+purposes let's assume its a table in a SQL database) from one database (<code>olddb</code>) 
+to another (<code>newdb</code>). </p>
+<p>The pseudocode for migration algorithm is as follows:</p>
+<p>Note: the pseudocode assumes that the database is a mapping of 
+primary keys to values (the objects in question are assumed to
+have a primary key and a value)</p>
+<p>The <code>Upsert</code> operation:</p>
+<pre><code class="language-text">Upsert(key, val) {
+    newdb[key] = val
+}
+</code></pre>
+<pre><code class="language-text">Delete(key, val) {
+  // we need to put a TOMBSTONE instead of actually
+  // deleting it so that the background migration
+  // process does not accidentally insert a 
+  // deleted value
+  newdb[key] = TOMBSTONE
+}
+</code></pre>
+<pre><code class="language-text">Get(key) {
+    if key in newdb {
+        val = newdb[key]
+        if val == TOMBSTONE {
+            return NULL
+        } else {
+            return val
+        }
+    } else if key in olddb {
+        return olddb[key]
+    }
+    return NULL
+}
+</code></pre>
+<p>And a background migration process that moves all the objects from
+<code>olddb</code> to <code>newdb</code></p>
+<pre><code class="language-text">migrate() {
+  for key, val in olddb {
+
+    // if does not exist is a conditional insert 
+    newdb[key] = val if does not exist
+  }
+}
+</code></pre>
+<p>This is the pluscal spec for the above migration algo:</p>
+<pre><code class="language-text">---- MODULE test ----
+EXTENDS Integers, FiniteSets, TLC
+
+Threads == {1,2} \* each thread represents a user
+N == 1..4 \* primary keys of objects that user will use
+Objects ==  [p \in N |-&gt; p] \* the values that primary keys map to 
+
+CONSTANTS 
+    NULL,
+    TOMBSTONE
+
+(* --algorithm zero_downtime_migration
+
+variables 
+\* db is used to simulate a system without migration. 
+\* olddb and newdb are used to simulate system with migration
+
+db = [pkey \in 1..2 |-&gt; pkey+1], \* some objects will already exist in db with different values when migration starts
+olddb = [pkey \in 1..2 |-&gt; pkey+1],
+newdb = [pkey \in {} |-&gt; NULL],
+
+define 
+  TypeOK == 
+       \/ DOMAIN db \subseteq DOMAIN Objects
+       \/ Cardinality(DOMAIN db) = 0
+
+  GetObjectWOMigration(pkey) == 
+    IF pkey \in DOMAIN db
+    THEN db[pkey]
+    ELSE NULL
+
+  GetObjectWMigration(pkey) == 
+    IF pkey \in DOMAIN newdb 
+    THEN IF newdb[pkey] = TOMBSTONE 
+         THEN NULL
+         ELSE newdb[pkey]
+    ELSE IF pkey \in DOMAIN olddb 
+         THEN olddb[pkey]
+         ELSE NULL
+
+ \* the system with migration and without migration will be compared 
+ \* this is our main invariant - we mimick a system where there is no 
+ \* migration happening so that we can use that to check that our system
+ \* where the migration is happening is correct
+  ConsistentViews ==
+    /\ \A pkey \in N: GetObjectWOMigration(pkey) = GetObjectWMigration(pkey)
+
+end define;
+
+\* WOMigration represent operations for the system without migration
+\* WMigration represents operations for system with migration
+
+macro UpsertWOMigration(db, key, val) begin
+        db := (key :&gt; val) @@ db;
+end macro;
+
+macro DeleteWOMigration(db, key) begin
+  if key \in DOMAIN db then
+    db := [p \in DOMAIN db \ {key} |-&gt; db[p]]
+  end if;
+end macro;
+
+macro UpsertWMigration(newdb, key, val) begin
+        newdb := (key :&gt; val) @@ newdb;
+end macro;
+
+macro DeleteWMigration(newdb, key) begin
+  newdb := (key :&gt; TOMBSTONE) @@ newdb
+end macro;
+
+\* each process represents 1 user
+\* each will randomly pick an object and either upsert or delete it
+process thread \in Threads
+
+  variables
+  i = 0,
+  curPkey = NULL;
+
+  begin
+    Start:
+      while i &lt; 2 do
+        PickObject:
+          with pkey \in N do
+            curPkey := pkey;
+          end with;
+        ChooseOperation:
+          either 
+            goto Upsert;
+          or
+            goto Delete;
+          end either;
+        Upsert:
+          either
+          \* we perform the same operation in the with and without migration system atomically
+          \* at the end of each operation, both the systems should return the same values for all the objects
+            UpsertWOMigration(db, curPkey, Objects[curPkey]);
+            UpsertWMigration(newdb, curPkey, Objects[curPkey]);
+            goto IncCounter;
+          or 
+          \* represents error - i.e 5xx to user. we need to error out in both the systems.
+            goto IncCounter;
+          end either;
+        Delete:
+         either
+            DeleteWOMigration(db, curPkey);
+            DeleteWMigration(newdb, curPkey);
+            goto IncCounter;
+         or
+            goto IncCounter;
+          end either;
+        IncCounter:
+          i := i + 1;
+     end while;
+
+  end process;
+
+\* this is the background migration process that copies over values from oldb to newdb
+process bg_migration = 3
+
+  variables
+  existingPkeys = DOMAIN olddb,
+  curPkey = NULL,
+
+  begin
+    Start:
+      while existingPkeys /= {} do 
+        Pick:
+          with pkey \in existingPkeys do
+            curPkey := pkey;
+            existingPkeys := existingPkeys \ {curPkey};
+          end with;
+        Migrate:
+        \* *note*: this entire get and set is atomic (i.e create if not exist). 
+        \* if you make the get and set non-atomic, the spec will fail (as it should)
+          if curPkey \notin DOMAIN newdb
+          then
+            newdb := (curPkey :&gt; olddb[curPkey]) @@ newdb;
+          end if;          
+      end while;
+
+end process;
+
+end algorithm; *)
+</code></pre>
+<p>Its amazing how the main part of the spec looks very similar to the pseudocode. </p>
+<p>The triceskt thing was to figure out the invariant - i.e how to make sure that our 
+migration algorithm was correct. For this, I simulate 2 services in the spec: one 
+where the migration is happening and another where it is not. And our invariant will 
+be that <code>GET</code> operations on all the objects give the exact same value in both the 
+services. </p>
+<p>Lets define the main variables involved: </p>
+<p><code>Objects</code> represents the objects that the users will work with. This is a function 
+that maps primary keys of the objects to their values. Each object is 
+assumed to have a primary key and a value. The spec uses 4 objects. 
+<code>db</code> is the database used by the service without migration. <code>olddb</code> and <code>newdb</code> are 
+are databases used by the service with migration. All the database variables are 
+functions mapping primary keys of objects to values.</p>
+<p>All the service APIs are written as macros. 
+The APIs for service with migration end with <code>WMigration</code>
+and for the service without migration end with <code>WOMigration</code></p>
+<p>Note: the database updates are
+implemented as function updates in pluscal - and the database shows up on the right.
+This is because the operator <code>@@</code> merges the keys in the 
+<code>left_function @@ right_function</code>
+and uses the value of the key in the <code>left_function</code> if present in both the functions.
+The <code>GET</code> operation is implemented as an operator - because macros in pluscal do not 
+return values.</p>
+<p>One thing I realized is that there is a lot of freedom in modelling complex systems in 
+TLA+. This lets us represent complex interactions in a very simple manner (for e.g 
+a database insert operation as a function update). This freedom might seem a bit weird
+when just starting with plucal/tla+, but its very powerful once we get used to it. </p>
+<p>Let's talk about the processses involved in the spec now. </p>
+<p>The spec has simulates 2 users randomly picking pre-defined objects (4 objects) and 
+then randomly 
+performing either <code>Upsert</code> or <code>Delete</code> operations on them. 
+Each user does this 2 times. The database starts out 
+with some objects already present (2 objects). The objects that the users pick and 
+perform operations on will include these already present 
+objects also. The number of users and objects and the number of times an action is repeated
+might
+seem very few to test with to make sure that the system is working properly, but since 
+the TLC model checker will create a state graph which includes every possible state, we 
+can be sure that all the edge cases are covered.
+All actions happening in our system with migration will be mirrored in a system without
+migration atomically.</p>
+<p>There is also a background migration process running which copies over the data from
+<code>olddb</code> to <code>newdb</code>.</p>
+<p>The final migration step involves deleting the <code>TOMBSTONES</code> in the newdb, but for now
+the spec does not have it. In future I might add it and revise this blog post.</p>
+<p>The true value of TLA+ spec shows up when the spec errors out. For example, when writing
+the spec I had written the <code>GetObjectWMigration</code> incorrectly: </p>
+<pre><code>GetObjectWMigration(pkey) == 
+    IF pkey \in DOMAIN newdb 
+    THEN newdb[pkey]
+    ELSE IF pkey \in DOMAIN olddb 
+         THEN olddb[pkey]
+         ELSE NULL
+</code></pre>
+<p>compare this to the correct version:</p>
+<pre><code>GetObjectWMigration(pkey) == 
+  IF pkey \in DOMAIN newdb 
+  THEN IF newdb[pkey] = TOMBSTONE 
+        THEN NULL
+        ELSE newdb[pkey]
+  ELSE IF pkey \in DOMAIN olddb 
+        THEN olddb[pkey]
+        ELSE NULL
+</code></pre>
+<p>The incorrect version does not handle the case where there is a <code>TOMBSTONE</code> present in newdb. 
+Because of this the spec was failing. </p>
+<p>This is a solid example of how TLA+ saves time: it lets us discover desgin flaws very early. 
+Imagine debugging this error after writing out the entire migraiton algorithm: it would've 
+hard to do and a very real chance that it'd have been missed altogether. Here, I just had to 
+step through the state changes to figure out the exact cause of the spec failure.</p>
+<p>One more way in which TLA+ helps is it forces us to think which steps must be atomic. If we 
+come across any steps that cannot be atomic then it forces to consider the implications of 
+concurrent execution. For example, in the background migration process above, before moving
+an item from <code>olddb</code> to <code>newdb</code> we check if the object already exists in the <code>newdb</code> (this
+maybe because it was deleted. If it was, we should not overwrite the <code>TOMBSTONE</code>). Checking 
+whether the object exists and creating it in the <code>newdb</code> must be atomic (most databases have 
+a <code>IF DOES NOT EXIST</code> support for conditional statements). While this may seem trivial, when
+writing the TLA+ spec it made it very clear and bought it to the focus. Important information
+like this when discovered early in the design phase can save a lot of time during implementation
+(for e.g here we would need to make sure that <code>newdb</code> has support for conditional statements 
+when choosing the database)  </p>
+
+<footer>
+    Made by Ganeshprasad
+    </footer>
+    <script src="/static/prism.js"></script>
+    </body>
+</html>
+  
