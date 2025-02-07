@@ -79,6 +79,13 @@ def generate_static_site(blog_posts_dir, output_dir):
     with open(output_path, "w") as f:
         f.write(output)
 
+    # About me template
+    about_template = env.get_template("about.html")
+    output = about_template.render()
+    output_path = os.path.join(output_dir, "about.html")
+    with open(output_path, "w") as f:
+        f.write(output)
+
 if __name__ == "__main__":
     blog_posts_dir = 'html_content'
     output_dir = 'docs'

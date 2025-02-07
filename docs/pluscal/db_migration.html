@@ -17,15 +17,25 @@
     <ul class="menu">
       <li><a href="/">Home</a></li>
       <li><a href="/tags.html">Tags</a></li>
+      <li><a href="/about.html">About me</a></li>
     </ul>
     <hr/>
+
+      <div class="social-links" style="float: right; margin-top: -45px;">
+      <a href="https://x.com/GB19328991" title="Follow me on X" target="_blank" rel="noopener noreferrer">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTguMjQ0IDIuMjVoMy4zMDhsLTcuMjI3IDguMjkgOC40MiAxMS4xNmgtNi44MTRsLTUuMjA1LTYuODE2LTUuOTQ5IDYuODE2SDEuNDdsNy43MzItOC44NzJMMSAyLjI1aDYuOTY2bDQuNzE0IDYuMjE0TDE4LjI0NCAyLjI1eiIgZmlsbD0iIzgyYjFmZiIvPjwvc3ZnPg==" alt="X (Twitter) icon">
+      </a>
+      <a href="https://linkedin.com/in/biradarganesh25" title="Connect on LinkedIn" target="_blank" rel="noopener noreferrer">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjAgMy43NUgzLjk5N2MtLjY4MSAwLTEuMjQ3LjU2NS0xLjI0NyAxLjI0NnYxNC4wMDhjMCAuNjguNTY2IDEuMjQ2IDEuMjQ3IDEuMjQ2SDE5Ljk5YS4xMjUuMTI1IDAgMCAwIC4wMSAwYy42OCAwIDEuMjQ2LS41NjUgMS4yNDYtMS4yNDZWNS4wMDVjMC0uNjktLjU1Ni0xLjI1NS0xLjI0Ni0xLjI1NXptLTExLjcxIDE0LjUxOGgtMi43VjkuNzMxaDIuN3Y4LjUzN3ptLTEuMzUtOS41YTEuNTY3IDEuNTY3IDAgMSAxLS4wMDMtMy4xMzIgMS41NjcgMS41NjcgMCAwIDEgLjAwMyAzLjEzMnptMTEuNDYgOS41aC0yLjY5di00LjE1M2MwLTEuMDA4LS4wMi0yLjMwOC0xLjQwNy0yLjMwOC0xLjQwOCAwLTEuNjIzIDEuMS0xLjYyMyAyLjIzNnY0LjIyNWgtMi42OVY5LjczMWgyLjU4djEuMTg0aC4wMzdjLjM2LS42ODMgMS4yNC0xLjQwNiAyLjU1Mi0xLjQwNiAyLjczIDAgMy4yMyAxLjggMy4yMyA0LjE0djQuNjE5eiIgZmlsbD0iIzgyYjFmZiIvPjwvc3ZnPg==" alt="LinkedIn icon">
+      </a>
+    </div>
     </nav>
 
     <h1> Learning formal verification by writing a spec for verifying a zero-downtime database migration in PlusCal </h1>
     <span style="font-size: 16px;"><i>posted on Dec 28, 2024</i></span>
     <p>Formal verification can be used to analyze complex systems to ensure 
 their correctness. Formal verification is the process of checking that a system 
-satisfies specific properties (which are specified by the user) across all possible states. There are two main types of properties: "safety properties" and "liveness properties".
+satisfies specific properties (which are specified by the user) across all possible states. 
 There are 2 main types of properties: 
 "safety properties" and "liveness properties". For the formal definition,
 please <a href="https://will62794.github.io/formal-methods/2020/08/01/safety-and-liveness.html">refer here</a>.
@@ -247,7 +257,7 @@ end process;
 end algorithm; *)
 </code></pre>
 <p>Its amazing how the main part of the spec looks very similar to the pseudocode. </p>
-<p>The triceskt thing was to figure out the invariant - i.e how to make sure that our 
+<p>The trickiest thing was to figure out the invariant - i.e how to make sure that our 
 migration algorithm was correct. For this, I simulate 2 services in the spec: one 
 where the migration is happening and another where it is not. And our invariant will 
 be that <code>GET</code> operations on all the objects give the exact same value in both the 
@@ -293,7 +303,7 @@ migration atomically.</p>
 the spec does not have it. In future I might add it and revise this blog post.</p>
 <p>The true value of TLA+ spec shows up when the spec errors out. For example, when writing
 the spec I had written the <code>GetObjectWMigration</code> incorrectly: </p>
-<pre><code>GetObjectWMigration(pkey) == 
+<pre><code class="language-text">GetObjectWMigration(pkey) == 
     IF pkey \in DOMAIN newdb 
     THEN newdb[pkey]
     ELSE IF pkey \in DOMAIN olddb 
@@ -301,7 +311,7 @@ the spec I had written the <code>GetObjectWMigration</code> incorrectly: </p>
          ELSE NULL
 </code></pre>
 <p>compare this to the correct version:</p>
-<pre><code>GetObjectWMigration(pkey) == 
+<pre><code class="language-text">GetObjectWMigration(pkey) == 
   IF pkey \in DOMAIN newdb 
   THEN IF newdb[pkey] = TOMBSTONE 
         THEN NULL

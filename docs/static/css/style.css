@@ -5,7 +5,10 @@ body {
   line-height: 1.5;
   background-color: #1a1a1a;
   color: #cdcbcb;
+  font-size: 20px;
 }
+
+
 
 /* header and footer areas */
 .menu { padding: 0; }
@@ -21,7 +24,7 @@ body {
 .title { font-size: 1.1em; }
 footer a {
   text-decoration: none;
-  color: #9d7cd8;
+  color: #82b1ff;
 }
 hr {
   border-style: dashed;
@@ -60,6 +63,28 @@ table {
 table thead th { border-bottom: 1px solid #555; }
 th, td { padding: 5px; }
 thead, tfoot, tr:nth-child(even) { background: #333; }
+a {
+    color: #82b1ff; 
+}
 a:visited {
   color: #b39ddb;
+}
+
+.social-links a {
+  display: inline-block;
+  margin-right: 7px;
+}
+
+.social-links a:last-child {
+  margin-right: 0;
+}
+
+.social-links a img {
+  fill: #82b1ff;
+  width: 24px;
+  height: 24px;
+}
+
+.social-links a:hover img {
+  fill: #b39ddb;
 }

@@ -8,7 +8,7 @@ published_date: "2024-12-28"
 
 Formal verification can be used to analyze complex systems to ensure 
 their correctness. Formal verification is the process of checking that a system 
-satisfies specific properties (which are specified by the user) across all possible states. There are two main types of properties: "safety properties" and "liveness properties".
+satisfies specific properties (which are specified by the user) across all possible states. 
 There are 2 main types of properties: 
 "safety properties" and "liveness properties". For the formal definition,
 please [refer here](https://will62794.github.io/formal-methods/2020/08/01/safety-and-liveness.html).
