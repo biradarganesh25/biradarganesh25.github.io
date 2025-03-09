@@ -70,6 +70,11 @@ a:visited {
   color: #b39ddb;
 }
 
+.social-links {
+  text-align: center;
+  margin-top: 10px;
+}
+
 .social-links a {
   display: inline-block;
   margin-right: 7px;
@@ -87,4 +92,13 @@ a:visited {
 
 .social-links a:hover img {
   fill: #b39ddb;
+}
+
+/* Responsive adjustments */
+@media screen and (min-width: 768px) {
+  .social-links {
+    float: right;
+    margin-top: -45px;
+    text-align: right;
+  }
 }
