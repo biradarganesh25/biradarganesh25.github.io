@@ -39,21 +39,21 @@ The idea is that any thread that needs to wait for a condition to be met can sle
 The psuedocode for producer would look like this: 
     
 ```text
-    1. Acquire lock
-    2. Add to buffer
-    3. If buffer was empty - signal on the condition variable to wake up one sleeping
-        (if any) consumers
-    4. Release lock
+1. Acquire lock
+2. Add to buffer
+3. If buffer was empty - signal on the condition variable to wake up one sleeping
+	(if any) consumers
+4. Release lock
 ``` 
 
 The psuedocode for consumer would look like: 
     
 ```text 
-    1. Acquire lock via condition variable
-    2. if buffer empty:
-        wait on condition variable
-    3. consume from the buffer
-    4. release lock
+1. Acquire lock via condition variable
+2. if buffer empty:
+	wait on condition variable
+3. consume from the buffer
+4. release lock
 ``` 
 
 This data structure will also provide a `Close` method to `broadcast` to all the sleeping consumers and tell them that no more data will be available. Let's look at the implementation now: 

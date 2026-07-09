@@ -18,6 +18,7 @@
       <li><a href="/">Home</a></li>
       <li><a href="/tags.html">Tags</a></li>
       <li><a href="/about.html">About me</a></li>
+      <li><a href="/resume.pdf" download="Ganeshprasad-Biradar-Resume.pdf">Resume</a></li>
     </ul>
     <hr/>
 
@@ -58,18 +59,18 @@
 <p>Condition variables in Go have the both the ability to <code>Signal</code> and <code>Broadcast</code>.</p>
 <p>The idea is that any thread that needs to wait for a condition to be met can sleep on on condition variable. This is much more efficient than continuosly checking it in a for loop. Any other thread that causes this condition to be met can wake up the sleeping threads (if any) using the same condition variable. </p>
 <p>The psuedocode for producer would look like this: </p>
-<pre><code class="language-text">    1. Acquire lock
-    2. Add to buffer
-    3. If buffer was empty - signal on the condition variable to wake up one sleeping
-        (if any) consumers
-    4. Release lock
+<pre><code class="language-text">1. Acquire lock
+2. Add to buffer
+3. If buffer was empty - signal on the condition variable to wake up one sleeping
+    (if any) consumers
+4. Release lock
 </code></pre>
 <p>The psuedocode for consumer would look like: </p>
-<pre><code class="language-text">    1. Acquire lock via condition variable
-    2. if buffer empty:
-        wait on condition variable
-    3. consume from the buffer
-    4. release lock
+<pre><code class="language-text">1. Acquire lock via condition variable
+2. if buffer empty:
+    wait on condition variable
+3. consume from the buffer
+4. release lock
 </code></pre>
 <p>This data structure will also provide a <code>Close</code> method to <code>broadcast</code> to all the sleeping consumers and tell them that no more data will be available. Let's look at the implementation now: </p>
 <p>The Go struct would be: </p>

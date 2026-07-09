@@ -1,4 +1,5 @@
 import os
+import shutil
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 import yaml
@@ -85,6 +86,10 @@ def generate_static_site(blog_posts_dir, output_dir):
     output_path = os.path.join(output_dir, "about.html")
     with open(output_path, "w") as f:
         f.write(output)
+
+    # Copy static assets (e.g. resume.pdf) into the served output directory
+    if os.path.exists("resume.pdf"):
+        shutil.copy("resume.pdf", os.path.join(output_dir, "resume.pdf"))
 
 if __name__ == "__main__":
     blog_posts_dir = 'html_content'
